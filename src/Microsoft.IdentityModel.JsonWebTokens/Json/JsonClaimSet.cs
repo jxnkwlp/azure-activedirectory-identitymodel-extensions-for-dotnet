@@ -230,49 +230,41 @@ namespace Microsoft.IdentityModel.JsonWebTokens
 
         private T GetValueInternal<T>(string key, bool throwEx, out bool found)
         {
-            found = false;
-            T value = default;
-            if (!RootElement.TryGetProperty(key, out JsonElement jsonElement))
+            // TODO - found may not be the right logic here as the property can be found, but transform failed.
+            found = RootElement.TryGetProperty(key, out JsonElement jsonElement);
+            if (!found)
             {
                 if (throwEx)
                     throw LogHelper.LogExceptionMessage(new ArgumentException(LogHelper.FormatInvariant(LogMessages.IDX14304, key)));
                 else
-                    return value;
+                    return default;
             }
 
-            found = true;
             try
             {
                 if (jsonElement.ValueKind == JsonValueKind.Null)
                 {
-                    if (Nullable.GetUnderlyingType(typeof(T)) != null)
-                        value = (T)(object)null;
+                    if (typeof(T) == typeof(object) || (typeof(T).IsAssignableFrom(typeof(object))) || Nullable.GetUnderlyingType(typeof(T)) != null)
+                        return (T)(object)null;
                     else
                     {
                         found = false;
-                        value = default;
+                        return default;
                     }
                 }
                 else
                 {
                     if (typeof(T) == typeof(JObject))
-                    {
-                        string json = jsonElement.ToString();
-                        return (T)(object)(JObject.Parse(json));
-                    }
+                        return (T)(object)(JObject.Parse(jsonElement.ToString()));
 
                     if (typeof(T) == typeof(JArray))
-                    {
-                        string json = jsonElement.ToString();
-                        return (T)(object)(JArray.Parse(json));
-                    }
+                        return (T)(object)(JArray.Parse(jsonElement.ToString()));
 
                     // need to adjust for object as value will be 
                     if (typeof(T) == typeof(object))
-                    {
-                        value = (T)CreateObjectFromJsonElement(jsonElement);
-                    }
-                    else if (typeof(T) == typeof(object[]))
+                        return (T)CreateObjectFromJsonElement(jsonElement);
+
+                    if (typeof(T) == typeof(object[]))
                     {
                         if (jsonElement.ValueKind == JsonValueKind.Array)
                         {
@@ -296,21 +288,19 @@ namespace Microsoft.IdentityModel.JsonWebTokens
                             return (T)(object)objects;
                         }
                     }
-                    else if (jsonElement.ValueKind == JsonValueKind.String)
+
+                    if (jsonElement.ValueKind == JsonValueKind.String)
                     {
                         if (typeof(T) == _typeofDateTime && DateTime.TryParse(jsonElement.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime dateTime))
-                            value = (T)(object)dateTime;
+                            return (T)(object)dateTime;
                         else
-                            value = System.Text.Json.JsonSerializer.Deserialize<T>(jsonElement.GetRawText());
+                            return System.Text.Json.JsonSerializer.Deserialize<T>(jsonElement.GetRawText());
                     }
-                    else if (typeof(T) == typeof(string))
-                    {
-                        value = (T)(jsonElement.ToString() as object);
-                    }
-                    else
-                    {
-                        value = System.Text.Json.JsonSerializer.Deserialize<T>(jsonElement.GetRawText());
-                    }
+
+                    if (typeof(T) == typeof(string))
+                        return (T)(jsonElement.ToString() as object);
+
+                    return System.Text.Json.JsonSerializer.Deserialize<T>(jsonElement.GetRawText());
                 }
             }
             catch (Exception ex)
@@ -320,7 +310,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens
                     throw LogHelper.LogExceptionMessage(new ArgumentException(LogHelper.FormatInvariant(LogMessages.IDX14305, key, typeof(T), jsonElement.ValueKind, jsonElement.GetRawText()), ex));
             }
 
-            return value;
+            return default;
         }
 
         internal bool TryGetClaim(string key, string issuer, out Claim claim)
