@@ -70,6 +70,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens
         internal byte[] _hpUtf8Bytes;
         internal char[] _pChars;
         internal byte[] _sBytes;
+        internal char[] _sChars;
 
         private Lazy<string> _act;
         private Lazy<string> _alg;
@@ -298,7 +299,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens
 
         private string EncodedSignatureFactory()
         {
-            return string.Empty;
+            return new string(_sChars);
         }
 
         internal bool HasPayloadClaim(string claimName)
@@ -492,7 +493,8 @@ namespace Microsoft.IdentityModel.JsonWebTokens
                 else
                 {
                     HasSignature = true;
-                    _sBytes = Base64UrlEncoder.UnsafeDecode(encodedJson.ToCharArray(dots[1] + 1, encodedJson.Length - dots[1] - 1));
+                    _sChars = encodedJson.ToCharArray(dots[1] + 1, encodedJson.Length - dots[1] - 1);
+                    _sBytes = Base64UrlEncoder.UnsafeDecode(_sChars);
                 }
 
                 _hChars = encodedJson.ToCharArray(0, dots[0]);
