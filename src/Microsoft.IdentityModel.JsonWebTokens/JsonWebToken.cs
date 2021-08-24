@@ -233,13 +233,37 @@ namespace Microsoft.IdentityModel.JsonWebTokens
         /// Gets the AuthenticationTag from the original raw data of this instance when it was created.
         /// </summary>
         /// <remarks>The original JSON Compact serialized format passed into the constructor. <see cref="JsonWebToken(string)"/></remarks>
-        public string AuthenticationTag { get; internal set; }
+        public string AuthenticationTag
+        {
+            // TODO - use lazy
+            get => UTF8Encoding.UTF8.GetString(_authenticationTagBytes);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public byte[] AuthenticationTagBytes()
+        {
+            return _authenticationTagBytes;
+        }
 
         /// <summary>
         /// Gets the Ciphertext from the original raw data of this instance when it was created.
         /// </summary>
         /// <remarks>The original JSON Compact serialized format passed into the constructor. <see cref="JsonWebToken(string)"/></remarks>
-        public string Ciphertext { get; internal set; }
+        public string Ciphertext
+        {
+            // TODO - use lazy
+            get => UTF8Encoding.UTF8.GetString(_ciphertextBytes);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public byte[] CipherBytes()
+        {
+            return _ciphertextBytes;
+        }
 
         /// <summary>
         /// Gets the 'value' of the 'cty' claim { cty, 'value' }.
