@@ -1036,6 +1036,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens
             {
                 SecurityToken = jsonWebToken,
                 ClaimsIdentity = CreateClaimsIdentity(jsonWebToken, validationParameters, issuer),
+                Issuer = issuer,
                 IsValid = true,
                 TokenType = type
             };

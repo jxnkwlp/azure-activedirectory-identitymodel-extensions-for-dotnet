@@ -228,6 +228,17 @@ namespace Microsoft.IdentityModel.JsonWebTokens
             return GetValueInternal<T>(key, true, out bool _);
         }
 
+        /// <summary>
+        /// The goal here is return types that are expected in a JWT token.
+        /// The 5 basic types: number, string, true / false, nil, array (of basic types).
+        /// This is not a general purpose translation layer for complex types.
+        /// For that we would need to provide a way to hook a JsonConverter to for complex types.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="throwEx"></param>
+        /// <param name="found"></param>
+        /// <returns></returns>
         private T GetValueInternal<T>(string key, bool throwEx, out bool found)
         {
             // TODO - found may not be the right logic here as the property can be found, but transform failed.
@@ -239,6 +250,9 @@ namespace Microsoft.IdentityModel.JsonWebTokens
                 else
                     return default;
             }
+
+            if (typeof(T) == typeof(JsonElement))
+                return (T)(object)jsonElement;
 
             try
             {
@@ -352,7 +366,8 @@ namespace Microsoft.IdentityModel.JsonWebTokens
                 if (jsonElement.TryGetDecimal(out decimal retValDecimal))
                     return (long)retValDecimal;
             }
-            else if (jsonElement.ValueKind == JsonValueKind.String)
+
+            if (jsonElement.ValueKind == JsonValueKind.String)
             {
                 string str = jsonElement.GetString();
                 if (long.TryParse(str, out long resultLong))
