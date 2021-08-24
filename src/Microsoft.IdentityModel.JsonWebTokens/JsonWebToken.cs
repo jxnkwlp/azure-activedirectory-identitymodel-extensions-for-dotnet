@@ -236,7 +236,10 @@ namespace Microsoft.IdentityModel.JsonWebTokens
         public string AuthenticationTag
         {
             // TODO - use lazy
-            get => UTF8Encoding.UTF8.GetString(_authenticationTagBytes);
+            get
+            {
+                return _authenticationTagBytes == null ? string.Empty : UTF8Encoding.UTF8.GetString(_authenticationTagBytes);
+            }
         }
 
         /// <summary>
@@ -254,7 +257,10 @@ namespace Microsoft.IdentityModel.JsonWebTokens
         public string Ciphertext
         {
             // TODO - use lazy
-            get => UTF8Encoding.UTF8.GetString(_ciphertextBytes);
+            get
+            {
+                return _ciphertextBytes == null ? string.Empty : UTF8Encoding.UTF8.GetString(_ciphertextBytes);
+            }
         }
 
         /// <summary>
