@@ -23,6 +23,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens
         IList<Claim> _claims;
 
         private static Type _typeofDateTime = typeof(DateTime);
+
         public JsonClaimSet()
         {
             RootElement = new JsonElement();
@@ -38,9 +39,9 @@ namespace Microsoft.IdentityModel.JsonWebTokens
             RootElement = JsonDocument.Parse(json).RootElement;
         }
 
-        public bool TryGetValue(string claimName, out JsonElement json)
+        public bool TryGetValue(string property, out JsonElement json)
         {
-            return RootElement.TryGetProperty(claimName, out json);
+            return RootElement.TryGetProperty(property, out json);
         }
 
         public JsonElement RootElement { get; }
@@ -258,7 +259,7 @@ namespace Microsoft.IdentityModel.JsonWebTokens
             {
                 if (jsonElement.ValueKind == JsonValueKind.Null)
                 {
-                    if (typeof(T) == typeof(object) || (typeof(T).IsAssignableFrom(typeof(object))) || Nullable.GetUnderlyingType(typeof(T)) != null)
+                    if (typeof(T) == typeof(object) || typeof(T).IsClass || Nullable.GetUnderlyingType(typeof(T)) != null)
                         return (T)(object)null;
                     else
                     {
@@ -339,6 +340,16 @@ namespace Microsoft.IdentityModel.JsonWebTokens
             return true;
         }
 
+        /// <summary>
+        /// The return types that are expected in a JWT token.
+        /// The 5 basic types: number, string, true / false, nil, array (of basic types).
+        /// This is not a general purpose translation layer for complex types.
+        /// For that we would need to provide a way to hook a JsonConverter to for complex types.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public bool TryGetValue<T>(string key, out T value)
         {
             value = GetValueInternal<T>(key, false, out bool found);
